@@ -48,19 +48,28 @@ def index():
         for file in data_files:
             if file and file.filename.endswith(('.xls', '.xlsx')):
                 filename = secure_filename(file.filename)
+                if not filename:
+                    filename = f"data_file_{len(df_list)}.xlsx"
                 filepath = os.path.join(temp_dir, filename)
                 file.save(filepath)
                 
                 try:
-                    df = pd.read_excel(filepath)
-                    df.columns = df.columns.str.strip()
+                    # MEMORY FIX: Read only the headers first (uses almost 0 RAM)
+                    df_headers = pd.read_excel(filepath, nrows=0)
+                    stripped_cols = df_headers.columns.str.strip().tolist()
                     
-                    # Keep only columns that exist in BOTH the data file and the master file
-                    available_cols = [col for col in target_columns if col in df.columns]
+                    # Find which column indices actually match our target columns
+                    use_cols_indices = [i for i, col in enumerate(stripped_cols) if col in target_columns]
                     
-                    if available_cols:
-                        df_filtered = df[available_cols].copy()
-                        df_list.append(df_filtered)
+                    if use_cols_indices:
+                        # Load ONLY the needed columns into memory (saves massive amounts of RAM)
+                        df = pd.read_excel(filepath, usecols=use_cols_indices)
+                        df.columns = df.columns.str.strip()
+                        
+                        df_list.append(df.copy())
+                    
+                    # Delete the file immediately after reading to free up space
+                    os.remove(filepath)
                 except Exception as e:
                     print(f"Error reading {filename}: {e}")
                     
