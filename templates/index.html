@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Smart Merger</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; margin: 0; padding: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); width: 100%; max-width: 550px; text-align: center; }
+        h1 { color: #2c3e50; margin-top: 0; margin-bottom: 25px; }
+        .form-group { margin-bottom: 25px; text-align: left; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #34495e; }
+        input[type="file"] { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; background: white; }
+        .help-text { font-size: 13px; color: #7f8c8d; margin-top: 8px; line-height: 1.4; }
+        button { width: 100%; padding: 16px; background-color: #27ae60; color: #fff; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background-color 0.3s; margin-top: 10px; }
+        button:hover { background-color: #219653; }
+        .alert { padding: 12px; background-color: #f8d7da; color: #721c24; border-radius: 6px; margin-bottom: 20px; text-align: left;}
+        .highlight { color: #e74c3c; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Excel Smart Merger</h1>
+        
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <div class="alert">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST" enctype="multipart/form-data">
+            
+            <div class="form-group" style="border-left: 4px solid #3498db;">
+                <label for="master_file">1. Upload Your MASTER FILE</label>
+                <input type="file" name="master_file" id="master_file" accept=".xls,.xlsx" required>
+                <div class="help-text">This file contains your empty headers (e.g., <span class="highlight">Name, Email, etc.</span>). The system will read these headers to know what to extract.</div>
+            </div>
+
+            <div class="form-group" style="border-left: 4px solid #9b59b6;">
+                <label for="data_files">2. Upload DATA FILES</label>
+                <input type="file" name="data_files" id="data_files" accept=".xls,.xlsx" multiple required>
+                <div class="help-text">Select all the Excel files that contain the raw data. The system will scan these files for the columns found in your Master File.</div>
+            </div>
+            
+            <button type="submit">Fill Master File & Download</button>
+        </form>
+    </div>
+</body>
+</html>
