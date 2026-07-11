@@ -46,7 +46,9 @@ def index():
             target_columns_lower = [c.lower() for c in target_columns]
             
             for file in data_files:
-                if file and file.filename.endswith(('.xls', '.xlsx')):
+                filename_lower = file.filename.lower() if file and file.filename else ""
+                
+                if filename_lower.endswith(('.xls', '.xlsx', '.xlsm', '.csv')):
                     filename = secure_filename(file.filename)
                     if not filename:
                         filename = f"data_file_{len(df_list)}.xlsx"
@@ -54,8 +56,12 @@ def index():
                     file.save(filepath)
                     
                     try:
-                        # MEMORY FIX: Read only the headers first
-                        df_headers = pd.read_excel(filepath, nrows=0)
+                        # MEMORY FIX: Read only headers first (CSV or Excel)
+                        if filename_lower.endswith('.csv'):
+                            df_headers = pd.read_csv(filepath, nrows=0)
+                        else:
+                            df_headers = pd.read_excel(filepath, nrows=0)
+                            
                         original_cols = list(df_headers.columns)
                         
                         # Create a mapping from original column name to the Master File's exact column name
@@ -72,19 +78,25 @@ def index():
                         
                         if use_cols_indices:
                             # Load ONLY the needed columns into memory
-                            df = pd.read_excel(filepath, usecols=use_cols_indices)
+                            if filename_lower.endswith('.csv'):
+                                df = pd.read_csv(filepath, usecols=use_cols_indices)
+                            else:
+                                df = pd.read_excel(filepath, usecols=use_cols_indices)
                             
                             # Rename columns so they EXACTLY match the Master File (fixes dropped data)
                             df.rename(columns=col_rename_map, inplace=True)
                             
                             df_list.append(df.copy())
                         else:
-                            flash(f"⚠️ Warning: Skipped '{filename}' because ZERO columns matched your Master File. Check the spelling or make sure headers are in the very first row!")
+                            flash(f"⚠️ Warning: Skipped '{file.filename}' because ZERO columns matched your Master File. Check spelling or ensure headers are in the very first row!")
                         
                         # Delete the file immediately after reading to free up space
                         os.remove(filepath)
                     except Exception as e:
-                        flash(f"⚠️ Error reading '{filename}': {str(e)}")
+                        flash(f"⚠️ Error reading '{file.filename}': {str(e)}")
+                else:
+                    if file and file.filename:
+                        flash(f"⚠️ Warning: Skipped '{file.filename}' because it is an unsupported file type! Only .xls, .xlsx, and .csv are supported.")
                         
             # 3. Combine all data and return the updated Master File
             if len(df_list) > 1:
