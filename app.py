@@ -72,6 +72,14 @@ def index():
             # Ensure the output has EXACTLY the same columns as the original master file in the same order
             final_df = final_df.reindex(columns=target_columns)
             
+            # Auto-increment serial numbers across all files if a serial number column exists
+            sr_col_variations = ['sr no', 'sr. no.', 's.no', 's.no.', 's no', 'sl no', 'sn', 'sr.no', 'sr.no.']
+            for col in final_df.columns:
+                if str(col).strip().lower() in sr_col_variations:
+                    # Replace the entire column with a continuous sequence from 1 to N
+                    final_df[col] = range(1, len(final_df) + 1)
+                    break
+            
             # Save it back to a new file
             output_path = os.path.join(temp_dir, "Updated_" + master_filename)
             final_df.to_excel(output_path, index=False)
