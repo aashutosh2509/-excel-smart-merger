@@ -45,6 +45,8 @@ def index():
         # 2. Process all Data Files
         df_list = [master_df] # We start with the master df so we keep its structure and any existing data
         
+        target_columns_lower = [c.lower() for c in target_columns]
+        
         for file in data_files:
             if file and file.filename.endswith(('.xls', '.xlsx')):
                 filename = secure_filename(file.filename)
@@ -54,17 +56,28 @@ def index():
                 file.save(filepath)
                 
                 try:
-                    # MEMORY FIX: Read only the headers first (uses almost 0 RAM)
+                    # MEMORY FIX: Read only the headers first
                     df_headers = pd.read_excel(filepath, nrows=0)
-                    stripped_cols = df_headers.columns.str.strip().tolist()
+                    original_cols = list(df_headers.columns)
                     
-                    # Find which column indices actually match our target columns
-                    use_cols_indices = [i for i, col in enumerate(stripped_cols) if col in target_columns]
+                    # Create a mapping from original column name to the Master File's exact column name
+                    use_cols_indices = []
+                    col_rename_map = {}
+                    
+                    for i, col in enumerate(original_cols):
+                        clean_col_lower = str(col).strip().lower()
+                        if clean_col_lower in target_columns_lower:
+                            use_cols_indices.append(i)
+                            # Find the exact Master File name to use
+                            master_exact_name = target_columns[target_columns_lower.index(clean_col_lower)]
+                            col_rename_map[col] = master_exact_name
                     
                     if use_cols_indices:
-                        # Load ONLY the needed columns into memory (saves massive amounts of RAM)
+                        # Load ONLY the needed columns into memory
                         df = pd.read_excel(filepath, usecols=use_cols_indices)
-                        df.columns = df.columns.str.strip()
+                        
+                        # Rename columns so they EXACTLY match the Master File (fixes dropped data)
+                        df.rename(columns=col_rename_map, inplace=True)
                         
                         df_list.append(df.copy())
                     
