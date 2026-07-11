@@ -34,13 +34,13 @@
             
             <div class="form-group" style="border-left: 4px solid #3498db;">
                 <label for="master_file">1. Upload Your MASTER FILE</label>
-                <input type="file" name="master_file" id="master_file" accept=".xls,.xlsx" required>
+                <input type="file" name="master_file" id="master_file" accept=".xls,.xlsx,.csv,.xlsm,.xlsb" required>
                 <div class="help-text">This file contains your empty headers (e.g., <span class="highlight">Name, Email, etc.</span>). The system will read these headers to know what to extract.</div>
             </div>
 
             <div class="form-group" style="border-left: 4px solid #9b59b6;">
                 <label for="data_files">2. Upload DATA FILES</label>
-                <input type="file" name="data_files" id="data_files" accept=".xls,.xlsx" multiple required>
+                <input type="file" name="data_files" id="data_files" accept=".xls,.xlsx,.csv,.xlsm,.xlsb" multiple required>
                 <div class="help-text">Select all the Excel files that contain the raw data. The system will scan these files for the columns found in your Master File.</div>
             </div>
             
