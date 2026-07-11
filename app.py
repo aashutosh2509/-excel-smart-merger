@@ -78,11 +78,13 @@ def index():
                             df.rename(columns=col_rename_map, inplace=True)
                             
                             df_list.append(df.copy())
+                        else:
+                            flash(f"⚠️ Warning: Skipped '{filename}' because ZERO columns matched your Master File. Check the spelling or make sure headers are in the very first row!")
                         
                         # Delete the file immediately after reading to free up space
                         os.remove(filepath)
                     except Exception as e:
-                        print(f"Error reading {filename}: {e}")
+                        flash(f"⚠️ Error reading '{filename}': {str(e)}")
                         
             # 3. Combine all data and return the updated Master File
             if len(df_list) > 1:
