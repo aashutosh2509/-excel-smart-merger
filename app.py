@@ -57,11 +57,16 @@ def index():
                     file.save(filepath)
                     
                     try:
+                        import gc
+                        
+                        # Use the new ultra-fast rust engine for modern excel files
+                        engine = 'calamine' if filename_lower.endswith(('.xlsx', '.xlsm', '.xlsb')) else None
+                        
                         # MEMORY FIX: Read only headers first (CSV or Excel)
                         if filename_lower.endswith('.csv'):
                             df_headers = pd.read_csv(filepath, nrows=0)
                         else:
-                            df_headers = pd.read_excel(filepath, nrows=0)
+                            df_headers = pd.read_excel(filepath, nrows=0, engine=engine)
                             
                         original_cols = list(df_headers.columns)
                         
@@ -82,12 +87,17 @@ def index():
                             if filename_lower.endswith('.csv'):
                                 df = pd.read_csv(filepath, usecols=use_cols_indices)
                             else:
-                                df = pd.read_excel(filepath, usecols=use_cols_indices)
+                                df = pd.read_excel(filepath, usecols=use_cols_indices, engine=engine)
                             
                             # Rename columns so they EXACTLY match the Master File (fixes dropped data)
                             df.rename(columns=col_rename_map, inplace=True)
                             
                             df_list.append(df.copy())
+                            
+                            # Aggressive memory cleanup
+                            del df
+                            del df_headers
+                            gc.collect()
                         else:
                             flash(f"⚠️ Warning: Skipped '{file.filename}' because ZERO columns matched your Master File. Check spelling or ensure headers are in the very first row!")
                         
