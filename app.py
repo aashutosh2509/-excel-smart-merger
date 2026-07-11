@@ -6,6 +6,7 @@ import tempfile
 
 app = Flask(__name__)
 app.secret_key = "super_secret_key"
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # Allow up to 100MB uploads
 
 @app.route("/", methods=["GET", "POST"])
 def index():
