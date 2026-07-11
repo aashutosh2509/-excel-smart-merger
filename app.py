@@ -77,7 +77,7 @@ def index():
             for col in final_df.columns:
                 if str(col).strip().lower() in sr_col_variations:
                     # Replace the entire column with a continuous sequence from 1 to N
-                    final_df[col] = range(1, len(final_df) + 1)
+                    final_df[col] = list(range(1, len(final_df) + 1))
                     break
             
             # Save it back to a new file
